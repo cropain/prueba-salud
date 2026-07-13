@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gestión de Pacientes - Salud Digital</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: #f2f5f7;
+    color: #1f2937;
+    padding: 30px 20px;
+  }
+  .container {
+    max-width: 1000px;
+    margin: 0 auto;
+  }
+  h1 {
+    font-size: 24px;
+    margin-bottom: 4px;
+    color: #0f766e;
+  }
+  p.subtitle {
+    color: #6b7280;
+    margin-bottom: 24px;
+    font-size: 14px;
+  }
+  .card {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+    padding: 24px;
+    margin-bottom: 24px;
+  }
+  .card h2 {
+    font-size: 16px;
+    margin-bottom: 16px;
+    color: #111827;
+  }
+  form {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 14px;
+  }
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .field.full {
+    grid-column: 1 / -1;
+  }
+  label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #4b5563;
+  }
+  input, textarea {
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    padding: 9px 10px;
+    font-size: 14px;
+    font-family: inherit;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  input:focus, textarea:focus {
+    border-color: #0f766e;
+  }
+  textarea { resize: vertical; min-height: 60px; }
+  button {
+    cursor: pointer;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    padding: 10px 16px;
+    transition: opacity 0.15s;
+  }
+  button:hover { opacity: 0.88; }
+  .btn-primary {
+    background: #0f766e;
+    color: #fff;
+    grid-column: 1 / -1;
+    justify-self: start;
+    padding: 10px 24px;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  th, td {
+    text-align: left;
+    padding: 10px 8px;
+    border-bottom: 1px solid #e5e7eb;
+    vertical-align: top;
+  }
+  th {
+    color: #6b7280;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+  .badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 600;
+  }
+  .badge-pendiente { background: #fef3c7; color: #92400e; }
+  .badge-atencion { background: #dbeafe; color: #1e40af; }
+  .badge-atendido { background: #d1fae5; color: #065f46; }
+  .badge-default { background: #e5e7eb; color: #374151; }
+  select.estado-select {
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    padding: 5px 6px;
+    font-size: 12px;
+  }
+  .btn-delete {
+    background: #fee2e2;
+    color: #b91c1c;
+    padding: 6px 10px;
+    font-size: 12px;
+  }
+  .empty {
+    text-align: center;
+    color: #9ca3af;
+    padding: 20px;
+  }
+  .toast {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: #111827;
+    color: #fff;
+    padding: 12px 18px;
+    border-radius: 8px;
+    font-size: 13px;
+    opacity: 0;
+    transform: translateY(-10px);
+    transition: all 0.25s;
+    pointer-events: none;
+    z-index: 100;
+  }
+  .toast.show {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  .toast.error { background: #b91c1c; }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <h1>Gestión de Pacientes</h1>
+  <p class="subtitle">Panel de registro y seguimiento clínico</p>
+
+  <div class="card">
+    <h2>Registrar nuevo paciente</h2>
+    <form id="form-paciente">
+      <div class="field">
+        <label>Nombre</label>
+        <input type="text" id="nombre" required>
+      </div>
+      <div class="field">
+        <label>Identificación</label>
+        <input type="text" id="identificacion" required>
+      </div>
+      <div class="field">
+        <label>Edad</label>
+        <input type="number" id="edad" min="0" required>
+      </div>
+      <div class="field full">
+        <label>Síntomas</label>
+        <textarea id="sintomas" required></textarea>
+      </div>
+      <button type="submit" class="btn-primary">Registrar paciente</button>
+    </form>
+  </div>
+
+  <div class="card">
+    <h2>Pacientes registrados</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Nombre</th>
+          <th>Identificación</th>
+          <th>Edad</th>
+          <th>Síntomas</th>
+          <th>Estado</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="tabla-pacientes">
+      </tbody>
+    </table>
+    <div id="empty-msg" class="empty" style="display:none;">No hay pacientes registrados aún.</div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const API_URL = "http://localhost:8000";
+const ESTADOS = ["Pendiente", "En atención", "Atendido"];
+
+const form = document.getElementById("form-paciente");
+const tabla = document.getElementById("tabla-pacientes");
+const emptyMsg = document.getElementById("empty-msg");
+const toast = document.getElementById("toast");
+
+function showToast(msg, isError = false) {
+  toast.textContent = msg;
+  toast.className = "toast show" + (isError ? " error" : "");
+  setTimeout(() => { toast.className = "toast"; }, 2500);
+}
+
+function badgeClass(estado) {
+  if (estado === "Pendiente") return "badge-pendiente";
+  if (estado === "En atención") return "badge-atencion";
+  if (estado === "Atendido") return "badge-atendido";
+  return "badge-default";
+}
+
+async function cargarPacientes() {
+  try {
+    const res = await fetch(`${API_URL}/pacientes`);
+    if (!res.ok) throw new Error("Error al cargar pacientes");
+    const pacientes = await res.json();
+    renderTabla(pacientes);
+  } catch (err) {
+    showToast(err.message, true);
+  }
+}
+
+function renderTabla(pacientes) {
+  tabla.innerHTML = "";
+  if (pacientes.length === 0) {
+    emptyMsg.style.display = "block";
+    return;
+  }
+  emptyMsg.style.display = "none";
+
+  pacientes.forEach(p => {
+    const tr = document.createElement("tr");
+
+    const opciones = ESTADOS.map(e =>
+      `<option value="${e}" ${e === p.estado ? "selected" : ""}>${e}</option>`
+    ).join("");
+
+    tr.innerHTML = `
+      <td>${escapeHtml(p.nombre)}</td>
+      <td>${escapeHtml(p.identificacion)}</td>
+      <td>${p.edad}</td>
+      <td>${escapeHtml(p.sintomas)}</td>
+      <td>
+        <span class="badge ${badgeClass(p.estado)}">${p.estado}</span><br>
+        <select class="estado-select" data-id="${p.id}">${opciones}</select>
+      </td>
+      <td><button class="btn-delete" data-id="${p.id}">Eliminar</button></td>
+    `;
+    tabla.appendChild(tr);
+  });
+
+  document.querySelectorAll(".estado-select").forEach(sel => {
+    sel.addEventListener("change", (e) => actualizarEstado(e.target.dataset.id, e.target.value));
+  });
+  document.querySelectorAll(".btn-delete").forEach(btn => {
+    btn.addEventListener("click", (e) => eliminarPaciente(e.target.dataset.id));
+  });
+}
+
+function escapeHtml(text) {
+  const div = document.createElement("div");
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+form.addEventListener("submit", async (e) => {
+  e.preventDefault();
+
+  const nuevoPaciente = {
+    nombre: document.getElementById("nombre").value.trim(),
+    identificacion: document.getElementById("identificacion").value.trim(),
+    edad: parseInt(document.getElementById("edad").value, 10),
+    sintomas: document.getElementById("sintomas").value.trim(),
+  };
+
+  try {
+    const res = await fetch(`${API_URL}/pacientes`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(nuevoPaciente),
+    });
+
+    if (!res.ok) {
+      const errData = await res.json();
+      throw new Error(errData.detail || "Error al registrar paciente");
+    }
+
+    form.reset();
+    showToast("Paciente registrado correctamente");
+    cargarPacientes();
+  } catch (err) {
+    showToast(err.message, true);
+  }
+});
+
+async function actualizarEstado(id, estado) {
+  try {
+    const res = await fetch(`${API_URL}/pacientes/${id}/estado`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ estado }),
+    });
+    if (!res.ok) throw new Error("Error al actualizar estado");
+    showToast("Estado actualizado");
+    cargarPacientes();
+  } catch (err) {
+    showToast(err.message, true);
+  }
+}
+
+async function eliminarPaciente(id) {
+  if (!confirm("¿Eliminar este paciente?")) return;
+  try {
+    const res = await fetch(`${API_URL}/pacientes/${id}`, { method: "DELETE" });
+    if (!res.ok) throw new Error("Error al eliminar paciente");
+    showToast("Paciente eliminado");
+    cargarPacientes();
+  } catch (err) {
+    showToast(err.message, true);
+  }
+}
+
+cargarPacientes();
+</script>
+
+</body>
+</html>
