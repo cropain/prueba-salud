@@ -1,0 +1,48 @@
+┌────────────────┐               ┌─────────────────┐
+│    USUARIOS    │               │    PACIENTES    │
+├────────────────┤               ├─────────────────┤
+│ id (PK)        │               │ id (PK)         │
+│ usuario        │               │ nombre          │
+│ password_hash  │               │ tipo_documento  │
+│ nombre         │               │ identificacion  │
+│ rol            │               │ fecha_nacimiento│
+└────────────────┘               │ genero          │
+                                 │ telefono        │
+┌────────────────┐               │ eps_codigo (FK) ├────────┐
+│      EPS       │               │ prioridad       │        │
+├────────────────┤               │ estado          │        │
+│ codigo (PK) ◄──┼───────────────┴─────────────────┘        │
+│ nombre         │                                          │
+└────────────────┘                                          │
+                                                            │
+* Relación: Un Paciente pertenece a una EPS única (N:1) ────┘
+
+### Detalle de Entidades
+
+#### 1. Tabla: `usuarios`
+Almacena el personal asistencial y administrativo autorizado para acceder al panel clínico. Las contraseñas están protegidas bajo un esquema de hash criptográfico seguro (SHA-256 + Salt dinámico).
+*   `id` (INTEGER, Primary Key, Autoincrement)
+*   `usuario` (TEXT, Único, No Nulo)
+*   `password_hash` (TEXT, No Nulo)
+*   `nombre` (TEXT, No Nulo)
+*   `rol` (TEXT, No Nulo)
+
+#### 2. Tabla: `eps`
+Catálogo maestro de las Entidades Promotoras de Salud para consistencia en la vinculación.
+*   `codigo` (TEXT, Primary Key) - *Ej: EPS001*
+*   `nombre` (TEXT, No Nulo) - *Ej: SURA EPS*
+
+#### 3. Tabla: `pacientes`
+Entidad principal del módulo de espera que almacena el estado asistencial y de triage de cada paciente.
+*   `id` (INTEGER, Primary Key, Autoincrement)
+*   `nombre` (TEXT, No Nulo)
+*   `tipo_documento` (TEXT, No Nulo) - *Valores: CC, TI, CE, RC, PA*
+*   `identificacion` (TEXT, Único, No Nulo)
+*   `fecha_nacimiento` (TEXT, No Nulo)
+*   `genero` (TEXT, No Nulo) - *Valores: Femenino, Masculino, Otro*
+*   `telefono` (TEXT, No Nulo)
+*   `eps_codigo` (TEXT, Foreign Key -> `eps.codigo`, No Nulo)
+*   `prioridad` (TEXT, No Nulo) - *Valores: Alta, Media, Baja*
+*   `estado` (TEXT, No Nulo, Default: 'Pendiente') - *Valores: Pendiente, En atención, Atendido*
+
+---

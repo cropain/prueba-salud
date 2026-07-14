@@ -1,0 +1,8 @@
+##  Instalación y Ejecución
+
+Sigue estos pasos para arrancar el entorno en menos de 2 minutos[cite: 1]:
+
+### 1. Clonar el repositorio e ingresar a la carpeta
+```bash
+git clone [https://github.com/cropain/prueba-salud.git](https://github.com/cropain/prueba-salud.git)
+cd prueba-salud
